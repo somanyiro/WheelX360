@@ -50,7 +50,7 @@ public static class Program
     { 
         //so I don't know why, but the force feedback has to be in a separate app to work
         //I know what you think, but multi threading or even running it in a separate process doesn't fix it
-        //the moment InitWindow is ran, the force feedback just stops (unless I have it in a separate app :/)
+        //the moment InitWindow is ran, the force feedback just stops unless I have it in a separate app :/
         string currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
         string currentDirectory = Path.GetDirectoryName(currentAssemblyPath);
 
