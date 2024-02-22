@@ -1,7 +1,4 @@
-﻿
-using Windows.Foundation;
-using Windows.Gaming.Input;
-using Windows.Gaming.Input.ForceFeedback;
+﻿using Windows.Gaming.Input;
 
 namespace WheelForceFeedback;
 
@@ -11,38 +8,10 @@ public static class Program
     {
         while (RacingWheel.RacingWheels.Count == 0)
         {
-            
+            Console.WriteLine("searching for racing wheel");
         }
-    }
-    
-    async void LoadForceEffects()
-    {
-        turnWheelLeft = new ();
-        turnWheelRight = new ();
-        rumbleWheel = new (PeriodicForceEffectKind.SineWave);
-        turnWheelLeft.SetParameters(new (centerSpringForce, 0, 0), TimeSpan.FromSeconds(10));
-        turnWheelRight.SetParameters(new (-centerSpringForce, 0, 0), TimeSpan.FromSeconds(10));
-        rumbleWheel.SetParameters(new (rumbleForce, 0, 0), 0.5f, 0.5f, 0.5f, TimeSpan.FromSeconds(10));
+        Console.WriteLine("racing wheel found");
 
-        IAsyncOperation<ForceFeedbackLoadEffectResult> loadLeftRequest = racingWheel.WheelMotor.LoadEffectAsync(turnWheelLeft);
-
-        ForceFeedbackLoadEffectResult result = await loadLeftRequest.AsTask();
-
-        if (result == ForceFeedbackLoadEffectResult.Succeeded)
-            Console.WriteLine("left effect loaded");
-
-        IAsyncOperation<ForceFeedbackLoadEffectResult> loadRightRequest = racingWheel.WheelMotor.LoadEffectAsync(turnWheelRight);
-
-        result = await loadRightRequest.AsTask();
-
-        if (result == ForceFeedbackLoadEffectResult.Succeeded)
-            Console.WriteLine("right effect loaded");
-
-        IAsyncOperation<ForceFeedbackLoadEffectResult> loadRumbleRequest = racingWheel.WheelMotor.LoadEffectAsync(rumbleWheel);
-
-        result = await loadRumbleRequest.AsTask();
-
-        if (result == ForceFeedbackLoadEffectResult.Succeeded)
-            Console.WriteLine("rumble effect loaded");
+        new ForceLoader().Run();
     }
 }

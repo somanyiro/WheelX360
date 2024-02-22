@@ -18,10 +18,6 @@ public class MainScene
     private IXbox360Controller controller;
     private bool controllerConnected = false;
     RacingWheel racingWheel;
-
-    private ConstantForceEffect turnWheelLeft = new ConstantForceEffect();
-    private ConstantForceEffect turnWheelRight = new ConstantForceEffect();
-    private PeriodicForceEffect rumbleWheel = new PeriodicForceEffect(PeriodicForceEffectKind.SineWave);
     
     private bool centerSpringEnabled = false;
     private static float centerSpringForce = 0.5f;
@@ -47,13 +43,6 @@ public class MainScene
         //================================ setup ================================
         controller = inputClient.CreateXbox360Controller();
         racingWheel = RacingWheel.RacingWheels[0];
-        
-        //ExecFunction.RunAsync(() => ForceFeedback());
-        /*
-        Thread forceFeedback = new Thread(() => ForceFeedback());
-        forceFeedback.Start();
-        */
-        //LoadForceEffects(racingWheel);
         
         wheelTexture = Raylib.LoadTexture("resources/g920.png");
         controllerTexture = Raylib.LoadTexture("resources/xbox360.png");
@@ -116,13 +105,10 @@ public class MainScene
         
             if (ImGui.Button("Apply settings"))
             {
-                UnLoadForceEffects();
-                LoadForceEffects();
             }
 
             if (ImGui.Button("Test motor"))
             {
-                turnWheelRight.Start();
             }
         
             if (controllerConnected)
@@ -132,15 +118,6 @@ public class MainScene
             rlImGui.End();
             Raylib.EndDrawing();
         }
-        
-        UnLoadForceEffects();
-    }
-
-    void UnLoadForceEffects()
-    {
-        racingWheel.WheelMotor.TryUnloadEffectAsync(turnWheelLeft);
-        racingWheel.WheelMotor.TryUnloadEffectAsync(turnWheelRight);
-        racingWheel.WheelMotor.TryUnloadEffectAsync(rumbleWheel);
     }
 
     void UpdateControllerState()
