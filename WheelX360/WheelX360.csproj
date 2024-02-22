@@ -18,4 +18,15 @@
       <PackageReference Include="rlImgui-cs" Version="2.0.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="resources\g920.png" />
+      <Content Include="resources\g920.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\xbox360.png" />
+      <Content Include="resources\xbox360.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
