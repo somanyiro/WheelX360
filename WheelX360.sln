@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WheelX360", "WheelX360\WheelX360.csproj", "{AEA288C6-A4FF-43AC-BC6A-203719A3740F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WheelForceFeedback", "WheelForceFeedback\WheelForceFeedback.csproj", "{1FA20FED-B309-42ED-B751-DBBC5502879D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEA288C6-A4FF-43AC-BC6A-203719A3740F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEA288C6-A4FF-43AC-BC6A-203719A3740F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEA288C6-A4FF-43AC-BC6A-203719A3740F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEA288C6-A4FF-43AC-BC6A-203719A3740F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FA20FED-B309-42ED-B751-DBBC5502879D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FA20FED-B309-42ED-B751-DBBC5502879D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FA20FED-B309-42ED-B751-DBBC5502879D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FA20FED-B309-42ED-B751-DBBC5502879D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
