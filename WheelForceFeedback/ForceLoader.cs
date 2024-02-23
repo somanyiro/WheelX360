@@ -1,6 +1,8 @@
 using Windows.Foundation;
 using Windows.Gaming.Input;
 using Windows.Gaming.Input.ForceFeedback;
+using H.Pipes;
+using SharedClasses;
 
 namespace WheelForceFeedback;
 
@@ -19,7 +21,26 @@ public class ForceLoader
     
     public void Run()
     {
-        LoadForceEffects();
+        CreateNamedPipeServers();
+        //LoadForceEffects();
+    }
+
+    async void CreateNamedPipeServers()
+    {
+        await using var rumblePipeServer = new PipeServer<ActivateRumbleMessage>("RumbleMessagePipe");
+        await using var settingsPipeServer = new PipeServer<FeedbackSettings>("FeedbackSettingsPipe");
+
+        rumblePipeServer.MessageReceived += (sender, args) =>
+        {
+            Console.WriteLine(
+                $"rumble should be activated with {(int)args.Message.LargeMotor} {(int)args.Message.SmallMotor}");
+        };
+
+        settingsPipeServer.MessageReceived += (sender, args) =>
+        {
+            Console.WriteLine("new settings received");
+        };
+
     }
     
     async void LoadForceEffects()

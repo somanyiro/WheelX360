@@ -12,7 +12,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="NamedPipeWrapper" Version="1.5.3-Beta" />
+      <ProjectReference Include="..\SharedClasses\SharedClasses.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="H.Pipes" Version="2.0.59" />
     </ItemGroup>
 
 </Project>
