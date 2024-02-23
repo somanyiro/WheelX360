@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="NamedPipeWrapper" Version="1.5.3-Beta" />
       <PackageReference Include="Nefarius.Drivers.HidHide" Version="1.12.2" />
       <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
       <PackageReference Include="Raylib-cs" Version="6.0.0" />
