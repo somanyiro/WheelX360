@@ -3,12 +3,14 @@ using System.Text.Json;
 using Windows.Foundation;
 using Windows.Gaming.Input;
 using Windows.Gaming.Input.ForceFeedback;
+using H.Pipes;
 using ImGuiNET;
 using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.Xbox360;
 using Raylib_cs;
 using rlImGui_cs;
+using SharedClasses;
 
 namespace WheelX360;
 
@@ -19,11 +21,11 @@ public class MainScene
     private bool controllerConnected = false;
     RacingWheel racingWheel;
     
-    private bool centerSpringEnabled = false;
-    private static float centerSpringForce = 0.5f;
-    private bool rumbleEnabled = false;
-    private static float rumbleForce = 0.5f;
+    private FeedbackSettings feedbackSettings = new FeedbackSettings();
 
+    private PipeClient<ActivateRumbleMessage> rumblePipeClient = new PipeClient<ActivateRumbleMessage>("RumbleMessagePipe");
+    private PipeClient<FeedbackSettings> settingsPipeClient = new PipeClient<FeedbackSettings>("FeedbackSettingsPipe");
+    
     private Texture2D wheelTexture;
     private Texture2D controllerTexture;
 
@@ -39,7 +41,6 @@ public class MainScene
 
     public void Run()
     {
-        
         //================================ setup ================================
         controller = inputClient.CreateXbox360Controller();
         racingWheel = RacingWheel.RacingWheels[0];
@@ -51,6 +52,9 @@ public class MainScene
         buttonMapping = JsonSerializer.Deserialize<ButtonMapping>(savedButtonMapping);
         if (buttonMapping is null)
             CreateDefaultButtonMapping();
+
+        rumblePipeClient.ConnectAsync();
+        settingsPipeClient.ConnectAsync();
         
         while (!Raylib.WindowShouldClose())
         {
@@ -95,20 +99,22 @@ public class MainScene
                 0f,
                 Color.White);
 
-            if (ImGui.RadioButton("Enable centering force", centerSpringEnabled))
-                centerSpringEnabled = !centerSpringEnabled;
-            ImGui.DragFloat("Centering power", ref centerSpringForce, 0.01f, 0f, 1f);
+            if (ImGui.RadioButton("Enable centering force", feedbackSettings.centerSpringEnabled))
+                feedbackSettings.centerSpringEnabled = !feedbackSettings.centerSpringEnabled;
+            ImGui.DragFloat("Centering power", ref feedbackSettings.centerSpringForce, 0.01f, 0f, 1f);
             
-            if (ImGui.RadioButton("Enable rumble", rumbleEnabled))
-                rumbleEnabled = !rumbleEnabled;
-            ImGui.DragFloat("Rumble power", ref rumbleForce, 0f, 0f, 1f);
+            if (ImGui.RadioButton("Enable rumble", feedbackSettings.rumbleEnabled))
+                feedbackSettings.rumbleEnabled = !feedbackSettings.rumbleEnabled;
+            ImGui.DragFloat("Rumble power", ref feedbackSettings.rumbleForce, 0f, 0f, 1f);
         
             if (ImGui.Button("Apply settings"))
             {
+                settingsPipeClient.WriteAsync(feedbackSettings);
             }
 
             if (ImGui.Button("Test motor"))
             {
+                rumblePipeClient.WriteAsync(new ActivateRumbleMessage(255, 255));
             }
         
             if (controllerConnected)
@@ -119,7 +125,7 @@ public class MainScene
             Raylib.EndDrawing();
         }
     }
-
+    
     void UpdateControllerState()
     {
         RacingWheelReading reading = racingWheel.GetCurrentReading();

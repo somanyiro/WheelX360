@@ -12,10 +12,7 @@ public class ForceLoader
     private ConstantForceEffect turnWheelRight = new ConstantForceEffect();
     private PeriodicForceEffect rumbleWheel = new PeriodicForceEffect(PeriodicForceEffectKind.SineWave);
 
-    private bool centerSpringEnabled = false;
-    private static float centerSpringForce = 0.5f;
-    private bool rumbleEnabled = false;
-    private static float rumbleForce = 0.5f;
+    private FeedbackSettings feedbackSettings = new FeedbackSettings();
     
     RacingWheel racingWheel = RacingWheel.RacingWheels[0];
     
@@ -33,7 +30,7 @@ public class ForceLoader
         rumblePipeServer.MessageReceived += (sender, args) =>
         {
             Console.WriteLine(
-                $"rumble should be activated with {(int)args.Message.LargeMotor} {(int)args.Message.SmallMotor}");
+                $"rumble should be activated with {(int)args.Message.largeMotor} {(int)args.Message.smallMotor}");
         };
 
         settingsPipeServer.MessageReceived += (sender, args) =>
@@ -41,6 +38,8 @@ public class ForceLoader
             Console.WriteLine("new settings received");
         };
 
+        await rumblePipeServer.StartAsync();
+        await settingsPipeServer.StartAsync();
     }
     
     async void LoadForceEffects()
@@ -48,9 +47,9 @@ public class ForceLoader
         turnWheelLeft = new ();
         turnWheelRight = new ();
         rumbleWheel = new (PeriodicForceEffectKind.SineWave);
-        turnWheelLeft.SetParameters(new (centerSpringForce, 0, 0), TimeSpan.FromSeconds(10));
-        turnWheelRight.SetParameters(new (-centerSpringForce, 0, 0), TimeSpan.FromSeconds(10));
-        rumbleWheel.SetParameters(new (rumbleForce, 0, 0), 0.5f, 0.5f, 0.5f, TimeSpan.FromSeconds(10));
+        turnWheelLeft.SetParameters(new (feedbackSettings.centerSpringForce, 0, 0), TimeSpan.FromSeconds(10));
+        turnWheelRight.SetParameters(new (-feedbackSettings.centerSpringForce, 0, 0), TimeSpan.FromSeconds(10));
+        rumbleWheel.SetParameters(new (feedbackSettings.rumbleForce, 0, 0), 0.5f, 0.5f, 0.5f, TimeSpan.FromSeconds(10));
 
         IAsyncOperation<ForceFeedbackLoadEffectResult> loadLeftRequest = racingWheel.WheelMotor.LoadEffectAsync(turnWheelLeft);
 
