@@ -12,9 +12,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="H.Pipes" Version="2.0.59" />
       <PackageReference Include="Nefarius.Drivers.HidHide" Version="1.12.2" />
       <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
+      <PackageReference Include="NetMQ" Version="4.0.1.13" />
       <PackageReference Include="Raylib-cs" Version="6.0.0" />
       <PackageReference Include="rlImgui-cs" Version="2.0.2" />
     </ItemGroup>

@@ -1,8 +1,9 @@
 using Windows.Foundation;
 using Windows.Gaming.Input;
 using Windows.Gaming.Input.ForceFeedback;
-using H.Pipes;
+using NetMQ;
 using SharedClasses;
+using NetMQ.Sockets;
 
 namespace WheelForceFeedback;
 
@@ -18,33 +19,19 @@ public class ForceLoader
     
     public void Run()
     {
-        CreateNamedPipeServers();
+        using var server = new ResponseSocket("@tcp://localhost:5556");
+        
+        while (true)
+        {
+            string m1 = server.ReceiveFrameString();
+            Console.WriteLine("From Client: {0}", m1);
+            server.SendFrame("hi back");
+        }
+        
+        
+        
         //LoadForceEffects();
-        
-    }
 
-    async void CreateNamedPipeServers()
-    {
-        await using var rumblePipeServer = new PipeServer<ActivateRumbleMessage>("RumbleMessagePipe");
-        await using var settingsPipeServer = new PipeServer<FeedbackSettings>("FeedbackSettingsPipe");
-
-        rumblePipeServer.MessageReceived += (sender, args) =>
-        {
-            Console.WriteLine(
-                $"rumble should be activated with {(int)args.Message.largeMotor} {(int)args.Message.smallMotor}");
-        };
-
-        settingsPipeServer.MessageReceived += (sender, args) =>
-        {
-            Console.WriteLine("new settings received");
-        };
-        
-        await rumblePipeServer.StartAsync();
-        await settingsPipeServer.StartAsync();
-        
-        Console.WriteLine("started servers");
-        
-        await Task.Delay(Timeout.InfiniteTimeSpan);
     }
     
     async void LoadForceEffects()

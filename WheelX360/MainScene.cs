@@ -1,13 +1,12 @@
 using System.Numerics;
 using System.Text.Json;
-using Windows.Foundation;
 using Windows.Gaming.Input;
-using Windows.Gaming.Input.ForceFeedback;
-using H.Pipes;
 using ImGuiNET;
 using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.Xbox360;
+using NetMQ;
+using NetMQ.Sockets;
 using Raylib_cs;
 using rlImGui_cs;
 using SharedClasses;
@@ -22,9 +21,6 @@ public class MainScene
     RacingWheel racingWheel;
     
     private FeedbackSettings feedbackSettings = new FeedbackSettings();
-
-    private PipeClient<ActivateRumbleMessage> rumblePipeClient;
-    private PipeClient<FeedbackSettings> settingsPipeClient;
     
     private Texture2D wheelTexture;
     private Texture2D controllerTexture;
@@ -34,8 +30,6 @@ public class MainScene
     public MainScene()
     {
         inputClient = new ViGEmClient();
-        rumblePipeClient = new PipeClient<ActivateRumbleMessage>("RumbleMessagePipe");
-        settingsPipeClient = new PipeClient<FeedbackSettings>("FeedbackSettingsPipe");
     }
 
     ~MainScene()
@@ -61,8 +55,7 @@ public class MainScene
             CreateDefaultButtonMapping();
         }
 
-        rumblePipeClient.ConnectAsync();
-        settingsPipeClient.ConnectAsync();
+        using var client = new RequestSocket(">tcp://localhost:5556");
         
         while (!Raylib.WindowShouldClose())
         {
@@ -117,13 +110,13 @@ public class MainScene
         
             if (ImGui.Button("Apply settings"))
             {
-                settingsPipeClient.WriteAsync(feedbackSettings);
+                
             }
 
             if (ImGui.Button("Test motor"))
             {
-                Console.WriteLine(rumblePipeClient.IsConnected);
-                rumblePipeClient.WriteAsync(new ActivateRumbleMessage(255, 255));
+                client.SendFrame("hello");
+                Console.WriteLine($"response: {client.ReceiveFrameString()}");
             }
         
             if (controllerConnected)
