@@ -20,6 +20,7 @@ public class ForceLoader
     {
         CreateNamedPipeServers();
         //LoadForceEffects();
+        
     }
 
     async void CreateNamedPipeServers()
@@ -37,9 +38,13 @@ public class ForceLoader
         {
             Console.WriteLine("new settings received");
         };
-
+        
         await rumblePipeServer.StartAsync();
         await settingsPipeServer.StartAsync();
+        
+        Console.WriteLine("started servers");
+        
+        await Task.Delay(Timeout.InfiniteTimeSpan);
     }
     
     async void LoadForceEffects()

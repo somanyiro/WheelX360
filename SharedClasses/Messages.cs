@@ -1,6 +1,5 @@
 ﻿namespace SharedClasses;
 
-[Serializable]
 public class ActivateRumbleMessage
 {
     public ActivateRumbleMessage(byte smallMotor, byte largeMotor)
@@ -13,7 +12,6 @@ public class ActivateRumbleMessage
     public byte largeMotor;
 }
 
-[Serializable]
 public class FeedbackSettings
 {
     public bool rumbleEnabled = true;

@@ -16,15 +16,15 @@ namespace WheelX360;
 
 public class MainScene
 {
-    private ViGEmClient inputClient = new ViGEmClient();
+    private ViGEmClient inputClient;
     private IXbox360Controller controller;
     private bool controllerConnected = false;
     RacingWheel racingWheel;
     
     private FeedbackSettings feedbackSettings = new FeedbackSettings();
 
-    private PipeClient<ActivateRumbleMessage> rumblePipeClient = new PipeClient<ActivateRumbleMessage>("RumbleMessagePipe");
-    private PipeClient<FeedbackSettings> settingsPipeClient = new PipeClient<FeedbackSettings>("FeedbackSettingsPipe");
+    private PipeClient<ActivateRumbleMessage> rumblePipeClient;
+    private PipeClient<FeedbackSettings> settingsPipeClient;
     
     private Texture2D wheelTexture;
     private Texture2D controllerTexture;
@@ -33,6 +33,9 @@ public class MainScene
     
     public MainScene()
     {
+        inputClient = new ViGEmClient();
+        rumblePipeClient = new PipeClient<ActivateRumbleMessage>("RumbleMessagePipe");
+        settingsPipeClient = new PipeClient<FeedbackSettings>("FeedbackSettingsPipe");
     }
 
     ~MainScene()
@@ -48,10 +51,15 @@ public class MainScene
         wheelTexture = Raylib.LoadTexture("resources/g920.png");
         controllerTexture = Raylib.LoadTexture("resources/xbox360.png");
 
-        string savedButtonMapping = File.ReadAllText("ButtonMapping.json");
-        buttonMapping = JsonSerializer.Deserialize<ButtonMapping>(savedButtonMapping);
-        if (buttonMapping is null)
+        try
+        {
+            string savedButtonMapping = File.ReadAllText("ButtonMapping.json");
+            buttonMapping = JsonSerializer.Deserialize<ButtonMapping>(savedButtonMapping);
+        }
+        catch
+        {
             CreateDefaultButtonMapping();
+        }
 
         rumblePipeClient.ConnectAsync();
         settingsPipeClient.ConnectAsync();
@@ -114,6 +122,7 @@ public class MainScene
 
             if (ImGui.Button("Test motor"))
             {
+                Console.WriteLine(rumblePipeClient.IsConnected);
                 rumblePipeClient.WriteAsync(new ActivateRumbleMessage(255, 255));
             }
         
