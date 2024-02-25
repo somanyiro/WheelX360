@@ -1,21 +1,21 @@
 ﻿namespace SharedClasses;
 
+public enum MessageType
+{
+    Rumble,
+    Setting
+}
+
 public class ActivateRumbleMessage
 {
-    public ActivateRumbleMessage(byte smallMotor, byte largeMotor)
-    {
-        this.smallMotor = smallMotor;
-        this.largeMotor = largeMotor;
-    }
-    
-    public byte smallMotor;
-    public byte largeMotor;
+    public byte SmallMotor { get; set; }
+    public byte LargeMotor { get; set; }
 }
 
 public class FeedbackSettings
 {
-    public bool rumbleEnabled = true;
-    public float rumbleForce = 0.5f;
-    public bool centerSpringEnabled = true;
-    public float centerSpringForce = 0.5f;
+    public bool RumbleEnabled { get; set; } = true;
+    public float RumbleForce { get; set; } = 0.5f;
+    public bool CenterSpringEnabled { get; set; } = true;
+    public float CenterSpringForce { get; set; } = 0.5f;
 }

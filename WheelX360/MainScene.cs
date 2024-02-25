@@ -39,12 +39,15 @@ public class MainScene
     public void Run()
     {
         //================================ setup ================================
+        //create controller and access wheel
         controller = inputClient.CreateXbox360Controller();
         racingWheel = RacingWheel.RacingWheels[0];
         
+        //load resources
         wheelTexture = Raylib.LoadTexture("resources/g920.png");
         controllerTexture = Raylib.LoadTexture("resources/xbox360.png");
 
+        //load button mappings
         try
         {
             string savedButtonMapping = File.ReadAllText("ButtonMapping.json");
@@ -55,7 +58,18 @@ public class MainScene
             CreateDefaultButtonMapping();
         }
 
-        using var client = new RequestSocket(">tcp://localhost:5556");
+        //create communication client for force feedback program
+        using var messageClient = new RequestSocket(">tcp://localhost:5556");
+
+        //tell the wheel to rumble if the controller rumbles
+        controller.FeedbackReceived += (sender, args) =>
+        {
+            Console.WriteLine($"rumble: large:{args.LargeMotor} small:{args.SmallMotor}");
+            var message = JsonSerializer.Serialize(new ActivateRumbleMessage
+                { LargeMotor = args.LargeMotor, SmallMotor = args.SmallMotor });
+            messageClient.SendFrame((int)MessageType.Rumble + message);
+            messageClient.ReceiveFrameString();
+        };
         
         while (!Raylib.WindowShouldClose())
         {
@@ -100,14 +114,18 @@ public class MainScene
                 0f,
                 Color.White);
 
-            if (ImGui.RadioButton("Enable centering force", feedbackSettings.centerSpringEnabled))
-                feedbackSettings.centerSpringEnabled = !feedbackSettings.centerSpringEnabled;
-            ImGui.DragFloat("Centering power", ref feedbackSettings.centerSpringForce, 0.01f, 0f, 1f);
+            if (ImGui.RadioButton("Enable centering force", feedbackSettings.CenterSpringEnabled))
+                feedbackSettings.CenterSpringEnabled = !feedbackSettings.CenterSpringEnabled;
+            float centerSpringForce = feedbackSettings.CenterSpringForce;
+            ImGui.DragFloat("Centering power", ref centerSpringForce, 0.01f, 0f, 1f);
+            feedbackSettings.CenterSpringForce = centerSpringForce;
             
-            if (ImGui.RadioButton("Enable rumble", feedbackSettings.rumbleEnabled))
-                feedbackSettings.rumbleEnabled = !feedbackSettings.rumbleEnabled;
-            ImGui.DragFloat("Rumble power", ref feedbackSettings.rumbleForce, 0f, 0f, 1f);
-        
+            if (ImGui.RadioButton("Enable rumble", feedbackSettings.RumbleEnabled))
+                feedbackSettings.RumbleEnabled = !feedbackSettings.RumbleEnabled;
+            float rumbleForce = feedbackSettings.RumbleForce;
+            ImGui.DragFloat("Rumble power", ref rumbleForce, 0f, 0f, 1f);
+            feedbackSettings.RumbleForce = rumbleForce;
+            
             if (ImGui.Button("Apply settings"))
             {
                 
@@ -115,8 +133,10 @@ public class MainScene
 
             if (ImGui.Button("Test motor"))
             {
-                client.SendFrame("hello");
-                Console.WriteLine($"response: {client.ReceiveFrameString()}");
+                var message = JsonSerializer.Serialize(new ActivateRumbleMessage
+                    { LargeMotor = 255, SmallMotor = 255 });
+                messageClient.SendFrame((int)MessageType.Rumble + message);
+                messageClient.ReceiveFrameString();
             }
         
             if (controllerConnected)
