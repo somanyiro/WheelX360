@@ -20,7 +20,7 @@ public class MainScene
     private bool controllerConnected = false;
     RacingWheel racingWheel;
     
-    private FeedbackSettings feedbackSettings = new FeedbackSettings();
+    private FeedbackSettings feedbackSettings;
     
     private Texture2D wheelTexture;
     private Texture2D controllerTexture;
@@ -47,17 +47,6 @@ public class MainScene
         wheelTexture = Raylib.LoadTexture("resources/g920.png");
         controllerTexture = Raylib.LoadTexture("resources/xbox360.png");
 
-        //load button mappings
-        try
-        {
-            string savedButtonMapping = File.ReadAllText("ButtonMapping.json");
-            buttonMapping = JsonSerializer.Deserialize<ButtonMapping>(savedButtonMapping);
-        }
-        catch
-        {
-            CreateDefaultButtonMapping();
-        }
-
         //create communication client for force feedback program
         using var messageClient = new RequestSocket(">tcp://localhost:5556");
 
@@ -70,6 +59,32 @@ public class MainScene
             messageClient.SendFrame((int)MessageType.Rumble + message);
             messageClient.ReceiveFrameString();
         };
+        
+        //load button mappings
+        try
+        {
+            string savedButtonMapping = File.ReadAllText("ButtonMapping.json");
+            buttonMapping = JsonSerializer.Deserialize<ButtonMapping>(savedButtonMapping);
+        }
+        catch
+        {
+            CreateDefaultButtonMapping();
+        }
+
+        //laod feedback settings
+        try
+        {
+            string savedFeedbackSettings = File.ReadAllText("FeedbackSettings.json");
+            feedbackSettings = JsonSerializer.Deserialize<FeedbackSettings>(savedFeedbackSettings);
+            ApplySettigns(messageClient);
+        }
+        catch
+        {
+            feedbackSettings = new();
+            JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+            string json = JsonSerializer.Serialize(feedbackSettings, jsonOptions);
+            File.WriteAllText("FeedbackSettings.json", json);
+        }
         
         while (!Raylib.WindowShouldClose())
         {
@@ -134,12 +149,9 @@ public class MainScene
                 feedbackSettings.RumbleFrequency = rumbleFrequency;
             }
             
-            
             if (ImGui.Button("Apply settings"))
             {
-                var message = JsonSerializer.Serialize(feedbackSettings);
-                messageClient.SendFrame((int)MessageType.Setting + message);
-                messageClient.ReceiveFrameString();
+                ApplySettigns(messageClient);
             }
 
             if (ImGui.Button("Test motor"))
@@ -157,6 +169,13 @@ public class MainScene
             rlImGui.End();
             Raylib.EndDrawing();
         }
+    }
+
+    void ApplySettigns(RequestSocket socket)
+    {
+        var message = JsonSerializer.Serialize(feedbackSettings);
+        socket.SendFrame((int)MessageType.Setting + message);
+        socket.ReceiveFrameString();
     }
     
     void UpdateControllerState()

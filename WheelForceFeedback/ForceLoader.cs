@@ -12,7 +12,7 @@ public class ForceLoader
 {
     private ConstantForceEffect turnWheelLeft = new ConstantForceEffect();
     private ConstantForceEffect turnWheelRight = new ConstantForceEffect();
-    private PeriodicForceEffect rumbleWheel = new PeriodicForceEffect(PeriodicForceEffectKind.SineWave);
+    private PeriodicForceEffect rumbleWheel = new PeriodicForceEffect(PeriodicForceEffectKind.TriangleWave);
     
     private FeedbackSettings feedbackSettings = new FeedbackSettings();
     
@@ -24,6 +24,11 @@ public class ForceLoader
 
         LoadForceEffects();
 
+        Task.Run(async () =>
+        {
+            await CenterWheel();
+        });
+        
         while (true)
         {
             string message = messageServer.ReceiveFrameString();
@@ -50,16 +55,32 @@ public class ForceLoader
         }
     }
 
-    async void LoadCenteringForce()
+    async Task CenterWheel()
     {
-    }
+        while (true)
+        {
+            if (racingWheel.GetCurrentReading().Wheel > 0.1f)
+            {
+                if (turnWheelLeft.State != ForceFeedbackEffectState.Running)
+                    turnWheelLeft.Start();
+            }
+            else
+            {
+                if (turnWheelLeft.State == ForceFeedbackEffectState.Running)
+                    turnWheelLeft.Stop();
+            }
 
-    async void LoadRumbleForce(ActivateRumbleMessage parameters)
-    {
-        racingWheel.WheelMotor.TryUnloadEffectAsync(rumbleWheel);
-        
-        rumbleWheel = new(PeriodicForceEffectKind.SineWave);
-        rumbleWheel.SetParameters(new(feedbackSettings.RumbleForce, 0, 0), 0.5f, 0.5f, 0.5f, TimeSpan.FromSeconds(1));
+            if (racingWheel.GetCurrentReading().Wheel < -0.1f)
+            {
+                if (turnWheelRight.State != ForceFeedbackEffectState.Running)
+                    turnWheelRight.Start();
+            }
+            else
+            {
+                if (turnWheelRight.State == ForceFeedbackEffectState.Running)
+                    turnWheelRight.Stop();
+            }
+        }
     }
 
     async void LoadForceEffects()
@@ -67,9 +88,9 @@ public class ForceLoader
         turnWheelLeft = new();
         turnWheelRight = new();
         rumbleWheel = new(PeriodicForceEffectKind.TriangleWave);
-        turnWheelLeft.SetParameters(new(feedbackSettings.CenterSpringForce, 0, 0), TimeSpan.FromSeconds(1));
-        turnWheelRight.SetParameters(new(-feedbackSettings.CenterSpringForce, 0, 0), TimeSpan.FromSeconds(1));
-        rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.FromSeconds(1));
+        turnWheelLeft.SetParameters(new(feedbackSettings.CenterSpringForce, 0, 0), TimeSpan.FromSeconds(30));
+        turnWheelRight.SetParameters(new(-feedbackSettings.CenterSpringForce, 0, 0), TimeSpan.FromSeconds(30));
+        rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
         rumbleWheel.Gain = feedbackSettings.RumbleForce;
         
         IAsyncOperation<ForceFeedbackLoadEffectResult> loadLeftRequest =
@@ -101,5 +122,6 @@ public class ForceLoader
     {
         racingWheel.WheelMotor.TryUnloadEffectAsync(turnWheelLeft);
         racingWheel.WheelMotor.TryUnloadEffectAsync(turnWheelRight);
+        racingWheel.WheelMotor.TryUnloadEffectAsync(rumbleWheel);
     }
 }

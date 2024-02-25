@@ -15,6 +15,7 @@ public static class Program
     {
         StartForceFeedback();
         
+        Raylib.SetTraceLogLevel(TraceLogLevel.Fatal);
         Raylib.InitWindow(500, 600, "WheelX360");
         rlImGui.Setup(true, true);
         
