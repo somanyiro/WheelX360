@@ -122,13 +122,24 @@ public class MainScene
             
             if (ImGui.RadioButton("Enable rumble", feedbackSettings.RumbleEnabled))
                 feedbackSettings.RumbleEnabled = !feedbackSettings.RumbleEnabled;
-            float rumbleForce = feedbackSettings.RumbleForce;
-            ImGui.DragFloat("Rumble power", ref rumbleForce, 0f, 0f, 1f);
-            feedbackSettings.RumbleForce = rumbleForce;
+
+            if (feedbackSettings.RumbleEnabled)
+            {
+                float rumbleForce = feedbackSettings.RumbleForce;
+                ImGui.DragFloat("Rumble power", ref rumbleForce, 0f, 0f, 1f);
+                feedbackSettings.RumbleForce = rumbleForce;
+
+                float rumbleFrequency = feedbackSettings.RumbleFrequency;
+                ImGui.DragFloat("Rumble frequency", ref rumbleFrequency, 0f, 4.5f, 12.5f);
+                feedbackSettings.RumbleFrequency = rumbleFrequency;
+            }
+            
             
             if (ImGui.Button("Apply settings"))
             {
-                
+                var message = JsonSerializer.Serialize(feedbackSettings);
+                messageClient.SendFrame((int)MessageType.Setting + message);
+                messageClient.ReceiveFrameString();
             }
 
             if (ImGui.Button("Test motor"))
