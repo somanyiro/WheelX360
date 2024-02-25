@@ -68,6 +68,7 @@ public class MainScene
         }
         catch
         {
+            Console.WriteLine("no button mapping found");
             CreateDefaultButtonMapping();
         }
 
@@ -80,6 +81,7 @@ public class MainScene
         }
         catch
         {
+            Console.WriteLine("no feedback settings found");
             feedbackSettings = new();
             JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = true };
             string json = JsonSerializer.Serialize(feedbackSettings, jsonOptions);
@@ -131,9 +133,17 @@ public class MainScene
 
             if (ImGui.RadioButton("Enable centering force", feedbackSettings.CenterSpringEnabled))
                 feedbackSettings.CenterSpringEnabled = !feedbackSettings.CenterSpringEnabled;
-            float centerSpringForce = feedbackSettings.CenterSpringForce;
-            ImGui.DragFloat("Centering power", ref centerSpringForce, 0.01f, 0f, 1f);
-            feedbackSettings.CenterSpringForce = centerSpringForce;
+
+            if (feedbackSettings.CenterSpringEnabled)
+            {
+                float centerSpringForce = feedbackSettings.CenterSpringForce;
+                ImGui.DragFloat("Centering power", ref centerSpringForce, 0f, 0f, 1f);
+                feedbackSettings.CenterSpringForce = centerSpringForce;
+
+                float centerSpringDeadzone = feedbackSettings.CenterSpringDeadzone;
+                ImGui.DragFloat("Centering deadzone", ref centerSpringDeadzone, 0f, 0f, 5f);
+                feedbackSettings.CenterSpringDeadzone = centerSpringDeadzone;
+            }
             
             if (ImGui.RadioButton("Enable rumble", feedbackSettings.RumbleEnabled))
                 feedbackSettings.RumbleEnabled = !feedbackSettings.RumbleEnabled;
@@ -161,7 +171,12 @@ public class MainScene
                 messageClient.SendFrame((int)MessageType.Rumble + message);
                 messageClient.ReceiveFrameString();
             }
-        
+
+            if (ImGui.Button("Emergency reset"))
+            {
+                racingWheel.WheelMotor.TryResetAsync();
+            }
+            
             if (controllerConnected)
                 UpdateControllerState();
             

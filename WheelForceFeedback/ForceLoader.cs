@@ -22,6 +22,7 @@ public class ForceLoader
     {
         using var messageServer = new ResponseSocket("@tcp://localhost:5556");
 
+        racingWheel.WheelMotor.TryResetAsync();
         LoadForceEffects();
 
         Task.Run(async () =>
@@ -61,7 +62,7 @@ public class ForceLoader
     {
         while (true)
         {
-            if (racingWheel.GetCurrentReading().Wheel > 0.1f)
+            if (racingWheel.GetCurrentReading().Wheel > feedbackSettings.CenterSpringDeadzone / 90)
             {
                 if (turnWheelLeft.State != ForceFeedbackEffectState.Running)
                     turnWheelLeft.Start();
@@ -72,7 +73,7 @@ public class ForceLoader
                     turnWheelLeft.Stop();
             }
 
-            if (racingWheel.GetCurrentReading().Wheel < -0.1f)
+            if (racingWheel.GetCurrentReading().Wheel < -(feedbackSettings.CenterSpringDeadzone / 90))
             {
                 if (turnWheelRight.State != ForceFeedbackEffectState.Running)
                     turnWheelRight.Start();
