@@ -47,8 +47,10 @@ public class ForceLoader
             if (type == (int)MessageType.Setting)
             {
                 feedbackSettings = JsonSerializer.Deserialize<FeedbackSettings>(message.Substring(1));
-                UnLoadForceEffects();
-                LoadForceEffects();
+                rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
+                turnWheelLeft.Gain = feedbackSettings.CenterSpringForce;
+                turnWheelRight.Gain = feedbackSettings.CenterSpringForce;
+
             }
             
             messageServer.SendFrame("message received");
@@ -88,10 +90,9 @@ public class ForceLoader
         turnWheelLeft = new();
         turnWheelRight = new();
         rumbleWheel = new(PeriodicForceEffectKind.TriangleWave);
-        turnWheelLeft.SetParameters(new(feedbackSettings.CenterSpringForce, 0, 0), TimeSpan.FromSeconds(30));
-        turnWheelRight.SetParameters(new(-feedbackSettings.CenterSpringForce, 0, 0), TimeSpan.FromSeconds(30));
+        turnWheelLeft.SetParameters(new(0.5f, 0, 0), TimeSpan.MaxValue);
+        turnWheelRight.SetParameters(new(-0.5f, 0, 0), TimeSpan.MaxValue);
         rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
-        rumbleWheel.Gain = feedbackSettings.RumbleForce;
         
         IAsyncOperation<ForceFeedbackLoadEffectResult> loadLeftRequest =
             racingWheel.WheelMotor.LoadEffectAsync(turnWheelLeft);
