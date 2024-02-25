@@ -32,13 +32,18 @@ public class ForceLoader
             if (type == (int)MessageType.Rumble)
             {
                 ActivateRumbleMessage rumbleMessage = JsonSerializer.Deserialize<ActivateRumbleMessage>(message.Substring(1));
-                Console.WriteLine("rumble");
+                rumbleWheel.Stop();
+                rumbleWheel.Gain = feedbackSettings.RumbleForce * Utils.Map(
+                    (int)rumbleMessage.LargeMotor + (int)rumbleMessage.SmallMotor,
+                    0, 510, 0, 1);
                 rumbleWheel.Start();
             }
 
             if (type == (int)MessageType.Setting)
             {
                 feedbackSettings = JsonSerializer.Deserialize<FeedbackSettings>(message.Substring(1));
+                UnLoadForceEffects();
+                LoadForceEffects();
             }
             
             messageServer.SendFrame("message received");

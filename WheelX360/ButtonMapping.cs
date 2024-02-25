@@ -1,4 +1,5 @@
 using Windows.Gaming.Input;
+using SharedClasses;
 
 namespace WheelX360;
 
@@ -33,11 +34,11 @@ public class ButtonMapping
         return axis switch
         {
             RacingWheelAxis.None => 0,
-            RacingWheelAxis.Wheel => (short)Map((float)reading.Wheel, -1, 1, short.MinValue, short.MaxValue),
-            RacingWheelAxis.Throttle => (short)Map((float)reading.Throttle, 0, 1, 0, short.MaxValue),
-            RacingWheelAxis.Brake => (short)Map((float)reading.Brake, 0, 1, 0, short.MaxValue),
-            RacingWheelAxis.Clutch => (short)Map((float)reading.Clutch, 0, 1, 0, short.MaxValue),
-            RacingWheelAxis.Handbrake => (short)Map((float)reading.Handbrake, 0, 1, 0, short.MaxValue),
+            RacingWheelAxis.Wheel => (short)Utils.Map((float)reading.Wheel, -1, 1, short.MinValue, short.MaxValue),
+            RacingWheelAxis.Throttle => (short)Utils.Map((float)reading.Throttle, 0, 1, 0, short.MaxValue),
+            RacingWheelAxis.Brake => (short)Utils.Map((float)reading.Brake, 0, 1, 0, short.MaxValue),
+            RacingWheelAxis.Clutch => (short)Utils.Map((float)reading.Clutch, 0, 1, 0, short.MaxValue),
+            RacingWheelAxis.Handbrake => (short)Utils.Map((float)reading.Handbrake, 0, 1, 0, short.MaxValue),
             _ => 0
         };
     }
@@ -47,19 +48,13 @@ public class ButtonMapping
         return axis switch
         {
             RacingWheelAxis.None => 0,
-            RacingWheelAxis.Wheel => (byte)Map((float)reading.Wheel, -1, 1, 0, 255),
-            RacingWheelAxis.Throttle => (byte)Map((float)reading.Throttle, 0, 1, 0, 255),
-            RacingWheelAxis.Brake => (byte)Map((float)reading.Brake, 0, 1, 0, 255),
-            RacingWheelAxis.Clutch => (byte)Map((float)reading.Clutch, 0, 1, 0, 255),
-            RacingWheelAxis.Handbrake => (byte)Map((float)reading.Handbrake, 0, 1, 0, 255),
+            RacingWheelAxis.Wheel => (byte)Utils.Map((float)reading.Wheel, -1, 1, 0, 255),
+            RacingWheelAxis.Throttle => (byte)Utils.Map((float)reading.Throttle, 0, 1, 0, 255),
+            RacingWheelAxis.Brake => (byte)Utils.Map((float)reading.Brake, 0, 1, 0, 255),
+            RacingWheelAxis.Clutch => (byte)Utils.Map((float)reading.Clutch, 0, 1, 0, 255),
+            RacingWheelAxis.Handbrake => (byte)Utils.Map((float)reading.Handbrake, 0, 1, 0, 255),
             _ => 0
         };
-    }
-    
-    static float Map(float value, float oldMin, float oldMax, float newMin, float newMax)
-    {
-        value = Math.Clamp(value, oldMin, oldMax);
-        return (value - oldMin) * (newMax - newMin) / (oldMax - oldMin) + newMin;
     }
 }
 
