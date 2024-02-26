@@ -162,6 +162,11 @@ public class MainScene
             if (ImGui.Button("Apply settings"))
             {
                 ApplySettigns(messageClient);
+                
+                //save settings
+                JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+                string json = JsonSerializer.Serialize(feedbackSettings, jsonOptions);
+                File.WriteAllText("FeedbackSettings.json", json);
             }
 
             if (ImGui.Button("Test motor"))
