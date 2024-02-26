@@ -41,7 +41,8 @@ public class ForceLoader
             {
                 feedbackSettings = JsonSerializer.Deserialize<FeedbackSettings>(message.Substring(1));
                 rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
-                
+                centerWheel.SetParameters(new(0.5f, 0, 0), 1, 1, 1, 1, feedbackSettings.CenterSpringDeadzone/90, 0);
+                centerWheel.Gain = feedbackSettings.CenterSpringForce;
             }
             
             messageServer.SendFrame("message received");
@@ -52,7 +53,7 @@ public class ForceLoader
     {
         centerWheel = new(ConditionForceEffectKind.Spring);
         rumbleWheel = new(PeriodicForceEffectKind.TriangleWave);
-        centerWheel.SetParameters(new(0.5f, 0, 0), 1, 1, 1, 1, 0.1f, 0);
+        centerWheel.SetParameters(new(0.5f, 0, 0), 1, 1, 1, 1, feedbackSettings.CenterSpringDeadzone/90, 0);
         rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
 
         IAsyncOperation<ForceFeedbackLoadEffectResult> loadCenterRequest =
