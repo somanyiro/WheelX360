@@ -43,6 +43,16 @@ public class ForceLoader
                 rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
                 centerWheel.SetParameters(new(0.5f, 0, 0), 1, 1, 1, 1, feedbackSettings.CenterSpringDeadzone/90, 0);
                 centerWheel.Gain = feedbackSettings.CenterSpringForce;
+                
+                if (feedbackSettings.RumbleEnabled)
+                    rumbleWheel.Start();
+                else
+                    rumbleWheel.Stop();
+                
+                if (feedbackSettings.CenterSpringEnabled)
+                    centerWheel.Start();
+                else
+                    centerWheel.Stop();
             }
             
             messageServer.SendFrame("message received");
