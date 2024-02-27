@@ -3,7 +3,9 @@
 public enum MessageType
 {
     Rumble,
-    Setting
+    Setting,
+    Reload,
+    Stop
 }
 
 public class ActivateRumbleMessage

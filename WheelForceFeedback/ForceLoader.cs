@@ -16,7 +16,7 @@ public class ForceLoader
     private FeedbackSettings feedbackSettings = new FeedbackSettings();
     
     RacingWheel racingWheel = RacingWheel.RacingWheels[0];
-
+    
     public void Run()
     {
         using var messageServer = new ResponseSocket("@tcp://localhost:5556");
@@ -53,6 +53,17 @@ public class ForceLoader
                     centerWheel.Start();
                 else
                     centerWheel.Stop();
+            }
+
+            if (type == (int)MessageType.Reload)
+            {
+                LoadForceEffects();
+            }
+
+            if (type == (int)MessageType.Stop)
+            {
+                UnLoadForceEffects();
+                racingWheel.WheelMotor.TryResetAsync();
             }
             
             messageServer.SendFrame("message received");

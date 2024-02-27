@@ -118,17 +118,9 @@ public class MainScene
             Raylib.DrawTexturePro(
                 wheelTexture,
                 new Rectangle(0, 0, wheelTexture.Width, wheelTexture.Height),
-                new Rectangle(150, 300, 200, 200),
-                new Vector2(100, 100),
+                new Rectangle(250, 300, 400, 400),
+                new Vector2(200, 200),
                 ((float)racingWheel.GetCurrentReading().Wheel * 90f),
-                Color.White);
-        
-            Raylib.DrawTexturePro(
-                controllerTexture,
-                new Rectangle(0, 0, controllerTexture.Width, controllerTexture.Height),
-                new Rectangle(350, 300, 200, 200),
-                new Vector2(100, 100),
-                0f,
                 Color.White);
 
             if (ImGui.RadioButton("Enable centering force", feedbackSettings.CenterSpringEnabled))
@@ -177,13 +169,22 @@ public class MainScene
                 messageClient.ReceiveFrameString();
             }
 
+            if (ImGui.Button("Reload effects"))
+            {
+                messageClient.SendFrame(((int)MessageType.Reload).ToString());
+                messageClient.ReceiveFrameString();
+            }
+            
             if (ImGui.Button("Emergency reset"))
             {
-                racingWheel.WheelMotor.TryResetAsync();
+                messageClient.SendFrame(((int)MessageType.Stop).ToString());
+                messageClient.ReceiveFrameString();
             }
             
             if (controllerConnected)
                 UpdateControllerState();
+
+            DisplayInputReading();
             
             //================================ cleanup ================================
             rlImGui.End();
@@ -215,7 +216,7 @@ public class MainScene
         controller.SetButtonState(Xbox360Button.RightThumb, (reading.Buttons & buttonMapping.RightThumb) != 0);
         controller.SetButtonState(Xbox360Button.LeftShoulder, (reading.Buttons & buttonMapping.LeftShoulder) != 0);
         controller.SetButtonState(Xbox360Button.RightShoulder, (reading.Buttons & buttonMapping.RightShoulder) != 0);
-        controller.SetButtonState(Xbox360Button.Guide, (reading.Buttons & buttonMapping.Guide) != 0);
+        //controller.SetButtonState(Xbox360Button.Guide, (reading.Buttons & buttonMapping.Guide) != 0);
         
         controller.SetAxisValue(Xbox360Axis.LeftThumbX, ButtonMapping.GetAxisValueShort(buttonMapping.LeftThumbX, reading));
         controller.SetAxisValue(Xbox360Axis.LeftThumbY, ButtonMapping.GetAxisValueShort(buttonMapping.LeftThumbY, reading));
@@ -238,12 +239,12 @@ public class MainScene
             Down = RacingWheelButtons.DPadDown,
             Left = RacingWheelButtons.DPadLeft,
             Right = RacingWheelButtons.DPadRight,
-            Start = RacingWheelButtons.Button7,
-            Back = RacingWheelButtons.Button8,
+            Start = RacingWheelButtons.Button8,
+            Back = RacingWheelButtons.Button7,
             LeftThumb = RacingWheelButtons.None,
             RightThumb = RacingWheelButtons.None,
-            LeftShoulder = RacingWheelButtons.Button6,
-            RightShoulder = RacingWheelButtons.Button5,
+            LeftShoulder = RacingWheelButtons.Button5,
+            RightShoulder = RacingWheelButtons.Button6,
             Guide = RacingWheelButtons.Button11,
             LeftThumbX = RacingWheelAxis.Wheel,
             LeftThumbY = RacingWheelAxis.None,
@@ -255,6 +256,41 @@ public class MainScene
         JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = true };
         string json = JsonSerializer.Serialize(buttonMapping, jsonOptions);
         File.WriteAllText("ButtonMapping.json", json);
+    }
+
+    void DisplayInputReading()
+    {
+        var r = racingWheel.GetCurrentReading();
+        var b = r.Buttons;
+        if ((b & RacingWheelButtons.Button1) != 0) ImGui.Text($"{RacingWheelButtons.Button1}");
+        if ((b & RacingWheelButtons.Button2) != 0) ImGui.Text($"{RacingWheelButtons.Button2}");
+        if ((b & RacingWheelButtons.Button3) != 0) ImGui.Text($"{RacingWheelButtons.Button3}");
+        if ((b & RacingWheelButtons.Button4) != 0) ImGui.Text($"{RacingWheelButtons.Button4}");
+        if ((b & RacingWheelButtons.Button5) != 0) ImGui.Text($"{RacingWheelButtons.Button5}");
+        if ((b & RacingWheelButtons.Button6) != 0) ImGui.Text($"{RacingWheelButtons.Button6}");
+        if ((b & RacingWheelButtons.Button7) != 0) ImGui.Text($"{RacingWheelButtons.Button7}");
+        if ((b & RacingWheelButtons.Button8) != 0) ImGui.Text($"{RacingWheelButtons.Button8}");
+        if ((b & RacingWheelButtons.Button9) != 0) ImGui.Text($"{RacingWheelButtons.Button9}");
+        if ((b & RacingWheelButtons.Button10) != 0) ImGui.Text($"{RacingWheelButtons.Button10}");
+        if ((b & RacingWheelButtons.Button11) != 0) ImGui.Text($"{RacingWheelButtons.Button11}");
+        if ((b & RacingWheelButtons.Button12) != 0) ImGui.Text($"{RacingWheelButtons.Button12}");
+        if ((b & RacingWheelButtons.Button13) != 0) ImGui.Text($"{RacingWheelButtons.Button13}");
+        if ((b & RacingWheelButtons.Button14) != 0) ImGui.Text($"{RacingWheelButtons.Button14}");
+        if ((b & RacingWheelButtons.Button15) != 0) ImGui.Text($"{RacingWheelButtons.Button15}");
+        if ((b & RacingWheelButtons.Button16) != 0) ImGui.Text($"{RacingWheelButtons.Button16}");
+        if ((b & RacingWheelButtons.NextGear) != 0) ImGui.Text($"{RacingWheelButtons.NextGear}");
+        if ((b & RacingWheelButtons.PreviousGear) != 0) ImGui.Text($"{RacingWheelButtons.PreviousGear}");
+        if ((b & RacingWheelButtons.DPadUp) != 0) ImGui.Text($"{RacingWheelButtons.DPadUp}");
+        if ((b & RacingWheelButtons.DPadRight) != 0) ImGui.Text($"{RacingWheelButtons.DPadRight}");
+        if ((b & RacingWheelButtons.DPadDown) != 0) ImGui.Text($"{RacingWheelButtons.DPadDown}");
+        if ((b & RacingWheelButtons.DPadLeft) != 0) ImGui.Text($"{RacingWheelButtons.DPadLeft}");
+
+        if (r.Throttle != 0) ImGui.Text($"Throttle: {r.Throttle}");
+        if (r.Brake != 0) ImGui.Text($"Brake: {r.Brake}");
+        if (r.Clutch != 0) ImGui.Text($"Clutch: {r.Clutch}");
+        if (r.Wheel != 0) ImGui.Text($"Wheel: {r.Wheel}");
+        if (r.Handbrake != 0) ImGui.Text($"Handbrake: {r.Handbrake}");
+        if (r.PatternShifterGear != 0) ImGui.Text($"PatternShifterGear: {r.PatternShifterGear}");
     }
     
 }
