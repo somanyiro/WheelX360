@@ -70,6 +70,9 @@ public class ForceLoader
         }
     }
 
+    /// <summary>
+    /// Load force effects into the wheels memory
+    /// </summary>
     async void LoadForceEffects()
     {
         centerWheel = new(ConditionForceEffectKind.Spring);

@@ -21,11 +21,12 @@ public class MainScene
     RacingWheel racingWheel;
     
     private FeedbackSettings feedbackSettings;
+    private ButtonMapping buttonMapping;
+    private UITexts UILocalization;
     
     private Texture2D wheelTexture;
     private Texture2D controllerTexture;
 
-    private ButtonMapping buttonMapping;
     
     public MainScene()
     {
@@ -48,7 +49,7 @@ public class MainScene
         controllerTexture = Raylib.LoadTexture("resources/xbox360.png");
 
         //create communication client for force feedback program
-        using var messageClient = new RequestSocket(">tcp://localhost:5556");
+        using var messageClient = new RequestSocket(">tcp://localhost:5556"); //TODO: make port configurable
 
         //tell the wheel to rumble if the controller rumbles
         controller.FeedbackReceived += (sender, args) =>
@@ -59,6 +60,22 @@ public class MainScene
             messageClient.SendFrame((int)MessageType.Rumble + message);
             messageClient.ReceiveFrameString();
         };
+        
+        //TODO: implement choosing between languages in UI
+        //load UI localization
+        try
+        {
+            string localizationFile = File.ReadAllText("Localization_en.json");
+            UILocalization = JsonSerializer.Deserialize<UITexts>(localizationFile);
+        }
+        catch
+        {
+            Console.WriteLine("no localization file found");
+            UILocalization = new UITexts();
+            string json = JsonSerializer.Serialize(UILocalization, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText("Localization_en.json", json);
+            throw;
+        }
         
         //load button mappings
         try
@@ -92,7 +109,7 @@ public class MainScene
         {
             Raylib.BeginDrawing();
             rlImGui.Begin();
-            ImGui.Begin("window", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize);
+            ImGui.Begin(UILocalization.ProgramTitle, ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize);
             ImGui.SetWindowSize(new Vector2(500, 600));
             ImGui.SetWindowPos(new Vector2(0,0));
             Raylib.ClearBackground(Color.DarkGray);
@@ -100,7 +117,7 @@ public class MainScene
 
             if (!controllerConnected)
             {
-                if (ImGui.Button("Connect"))
+                if (ImGui.Button(UILocalization.ControllerConnectButton))
                 {
                     controller.Connect();
                     controllerConnected = true;
@@ -108,7 +125,7 @@ public class MainScene
             }
             else
             {
-                if (ImGui.Button("Disconnect"))
+                if (ImGui.Button(UILocalization.ControllerDisconnectButton))
                 {
                     controller.Disconnect();
                     controllerConnected = false;
@@ -123,35 +140,35 @@ public class MainScene
                 ((float)racingWheel.GetCurrentReading().Wheel * 90f),
                 Color.White);
 
-            if (ImGui.RadioButton("Enable centering force", feedbackSettings.CenterSpringEnabled))
+            if (ImGui.RadioButton(UILocalization.CenteringForceRadioButton, feedbackSettings.CenterSpringEnabled))
                 feedbackSettings.CenterSpringEnabled = !feedbackSettings.CenterSpringEnabled;
 
             if (feedbackSettings.CenterSpringEnabled)
             {
                 float centerSpringForce = feedbackSettings.CenterSpringForce;
-                ImGui.DragFloat("Centering power", ref centerSpringForce, 0f, 0f, 1f);
+                ImGui.DragFloat(UILocalization.CenteringForceStrengthInput, ref centerSpringForce, 0f, 0f, 1f);
                 feedbackSettings.CenterSpringForce = centerSpringForce;
 
                 float centerSpringDeadzone = feedbackSettings.CenterSpringDeadzone;
-                ImGui.DragFloat("Centering deadzone", ref centerSpringDeadzone, 0f, 0f, 5f);
+                ImGui.DragFloat(UILocalization.CenteringForceDeadzoneInput, ref centerSpringDeadzone, 0f, 0f, 5f);
                 feedbackSettings.CenterSpringDeadzone = centerSpringDeadzone;
             }
             
-            if (ImGui.RadioButton("Enable rumble", feedbackSettings.RumbleEnabled))
+            if (ImGui.RadioButton(UILocalization.EnableRumbleRadioButton, feedbackSettings.RumbleEnabled))
                 feedbackSettings.RumbleEnabled = !feedbackSettings.RumbleEnabled;
 
             if (feedbackSettings.RumbleEnabled)
             {
                 float rumbleForce = feedbackSettings.RumbleForce;
-                ImGui.DragFloat("Rumble power", ref rumbleForce, 0f, 0f, 1f);
+                ImGui.DragFloat(UILocalization.RumbleStrengthInput, ref rumbleForce, 0f, 0f, 1f);
                 feedbackSettings.RumbleForce = rumbleForce;
 
                 float rumbleFrequency = feedbackSettings.RumbleFrequency;
-                ImGui.DragFloat("Rumble frequency", ref rumbleFrequency, 0f, 4.5f, 12.5f);
+                ImGui.DragFloat(UILocalization.RumbleFrequencyInput, ref rumbleFrequency, 0f, 4.5f, 12.5f);
                 feedbackSettings.RumbleFrequency = rumbleFrequency;
             }
             
-            if (ImGui.Button("Apply settings"))
+            if (ImGui.Button(UILocalization.ApplySettingsButton))
             {
                 ApplySettigns(messageClient);
                 
@@ -161,7 +178,7 @@ public class MainScene
                 File.WriteAllText("FeedbackSettings.json", json);
             }
 
-            if (ImGui.Button("Test motor"))
+            if (ImGui.Button(UILocalization.TestMotorButton))
             {
                 var message = JsonSerializer.Serialize(new ActivateRumbleMessage
                     { LargeMotor = 255, SmallMotor = 255 });
@@ -169,13 +186,13 @@ public class MainScene
                 messageClient.ReceiveFrameString();
             }
 
-            if (ImGui.Button("Reload effects"))
+            if (ImGui.Button(UILocalization.ReloadEffectsButton) || (racingWheel.GetCurrentReading().Buttons & RacingWheelButtons.Button6) != 0)
             {
                 messageClient.SendFrame(((int)MessageType.Reload).ToString());
                 messageClient.ReceiveFrameString();
             }
             
-            if (ImGui.Button("Emergency reset"))
+            if (ImGui.Button(UILocalization.ResetWheelButton))
             {
                 messageClient.SendFrame(((int)MessageType.Stop).ToString());
                 messageClient.ReceiveFrameString();
@@ -216,7 +233,7 @@ public class MainScene
         controller.SetButtonState(Xbox360Button.RightThumb, (reading.Buttons & buttonMapping.RightThumb) != 0);
         controller.SetButtonState(Xbox360Button.LeftShoulder, (reading.Buttons & buttonMapping.LeftShoulder) != 0);
         controller.SetButtonState(Xbox360Button.RightShoulder, (reading.Buttons & buttonMapping.RightShoulder) != 0);
-        //controller.SetButtonState(Xbox360Button.Guide, (reading.Buttons & buttonMapping.Guide) != 0);
+        controller.SetButtonState(Xbox360Button.Guide, (reading.Buttons & buttonMapping.Guide) != 0);
         
         controller.SetAxisValue(Xbox360Axis.LeftThumbX, ButtonMapping.GetAxisValueShort(buttonMapping.LeftThumbX, reading));
         controller.SetAxisValue(Xbox360Axis.LeftThumbY, ButtonMapping.GetAxisValueShort(buttonMapping.LeftThumbY, reading));
@@ -243,9 +260,9 @@ public class MainScene
             Back = RacingWheelButtons.Button7,
             LeftThumb = RacingWheelButtons.None,
             RightThumb = RacingWheelButtons.None,
-            LeftShoulder = RacingWheelButtons.Button5,
-            RightShoulder = RacingWheelButtons.Button6,
-            Guide = RacingWheelButtons.Button11,
+            LeftShoulder = RacingWheelButtons.PreviousGear,
+            RightShoulder = RacingWheelButtons.NextGear,
+            Guide = RacingWheelButtons.None,
             LeftThumbX = RacingWheelAxis.Wheel,
             LeftThumbY = RacingWheelAxis.None,
             RightThumbX = RacingWheelAxis.None,
