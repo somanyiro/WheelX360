@@ -28,48 +28,56 @@ public class ForceLoader
         {
             string message = messageServer.ReceiveFrameString();
             int type = (int)Char.GetNumericValue(message[0]);
-            
-            if (type == (int)MessageType.Rumble)
-            {
-                ActivateRumbleMessage rumbleMessage = JsonSerializer.Deserialize<ActivateRumbleMessage>(message.Substring(1));
-                rumbleWheel.Gain = feedbackSettings.RumbleForce * Utils.Map(
-                    (int)rumbleMessage.LargeMotor + (int)rumbleMessage.SmallMotor,
-                    0, 510, 0, 1);
-            }
 
-            if (type == (int)MessageType.Setting)
+            switch (type)
             {
-                feedbackSettings = JsonSerializer.Deserialize<FeedbackSettings>(message.Substring(1));
-                rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
-                centerWheel.SetParameters(new(0.5f, 0, 0), 1, 1, 1, 1, feedbackSettings.CenterSpringDeadzone/90, 0);
-                centerWheel.Gain = feedbackSettings.CenterSpringForce;
+                case (int)MessageType.Rumble:
+                    HandleNewRumbleStrength(JsonSerializer.Deserialize<ActivateRumbleMessage>(message.Substring(1)));
+                    break;
                 
-                if (feedbackSettings.RumbleEnabled)
-                    rumbleWheel.Start();
-                else
-                    rumbleWheel.Stop();
+                case (int)MessageType.Setting:
+                    HandleNewSettings(JsonSerializer.Deserialize<FeedbackSettings>(message.Substring(1)));
+                    break;
                 
-                if (feedbackSettings.CenterSpringEnabled)
-                    centerWheel.Start();
-                else
-                    centerWheel.Stop();
-            }
-
-            if (type == (int)MessageType.Reload)
-            {
-                LoadForceEffects();
-            }
-
-            if (type == (int)MessageType.Stop)
-            {
-                UnLoadForceEffects();
-                racingWheel.WheelMotor.TryResetAsync();
+                case (int)MessageType.Reload:
+                    LoadForceEffects();
+                    break;
+                
+                case (int)MessageType.Stop:
+                    UnLoadForceEffects();
+                    racingWheel.WheelMotor.TryResetAsync();
+                    break;
             }
             
             messageServer.SendFrame("message received");
         }
     }
 
+    void HandleNewRumbleStrength(ActivateRumbleMessage rumbleMessage)
+    {
+        rumbleWheel.Gain = feedbackSettings.RumbleForce * Utils.Map(
+            (int)rumbleMessage.LargeMotor + (int)rumbleMessage.SmallMotor,
+            0, 510, 0, 1);
+    }
+    
+    void HandleNewSettings(FeedbackSettings settings)
+    {
+        feedbackSettings = settings;
+        rumbleWheel.SetParameters(new(0.5f, 0, 0), feedbackSettings.RumbleFrequency, 0.5f, 0f, TimeSpan.MaxValue);
+        centerWheel.SetParameters(new(0.5f, 0, 0), 1, 1, 1, 1, feedbackSettings.CenterSpringDeadzone/90, 0);
+        centerWheel.Gain = feedbackSettings.CenterSpringForce;
+                
+        if (feedbackSettings.RumbleEnabled)
+            rumbleWheel.Start();
+        else
+            rumbleWheel.Stop();
+                
+        if (feedbackSettings.CenterSpringEnabled)
+            centerWheel.Start();
+        else
+            centerWheel.Stop();
+    }
+    
     /// <summary>
     /// Load force effects into the wheels memory
     /// </summary>

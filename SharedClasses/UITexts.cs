@@ -3,6 +3,8 @@ namespace SharedClasses;
 public class UITexts
 {
     public string ProgramTitle = "WheelX360";
+    public string SearchingForWheelText = "Searching for racing wheel\nIf this takes more than a second,\nconsider starting the software of your wheel (GHUB)";
+    
     public string ControllerConnectButton = "Connect";
     public string ControllerDisconnectButton = "Disconnect";
     public string CenteringForceRadioButton = "Enable centering force";
