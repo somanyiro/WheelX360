@@ -47,11 +47,11 @@ public static class Program
         }
     }
 
-    static void StartForceFeedback()
-    { 
-        //so I don't know why, but the force feedback has to be in a separate app to work
-        //I know what you think, but multi threading or even running it in a separate process doesn't fix it
-        //the moment InitWindow is ran, the force feedback just stops unless I have it in a separate app :/
+    /// <summary>
+    /// Starts force feedback background service
+    /// </summary>
+    static void StartForceFeedback() // I don't know why, but I can't get the force feedback to work properly within the same program, even with separate threads. So I have to start it as a separate process.
+    {
         string currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
         string currentDirectory = Path.GetDirectoryName(currentAssemblyPath);
 
